@@ -1,4 +1,5 @@
 numpy
+matplotlib
 stable-baselines3
 mujoco 
 mediapy

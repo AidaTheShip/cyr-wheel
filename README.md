@@ -1,5 +1,10 @@
 # cyr-wheel
 
+# TO-DO 
+- Figure out how units work in Mujoco.
+- Reinforcement Learning Algorithm in Mujoco. 
+- Scale/Rotate/Translate objects in Mujoco. (Intial conditions)
+
 # Control Algorithm 
 Add more information here...
 

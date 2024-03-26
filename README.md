@@ -7,6 +7,9 @@ Add more information here...
 We will use Mujuco to model the dynamics of the wheel in python. Then we use stable baselines to provide and set up a stable reinforcement learning algorithm. 
 
 ## Mujuco
+Make sure that you install Mujuco: pip install mujoco 
+Note that everything in Mujuco is in cartesian coordinates. 
+
 Mujuco uses XML files. What are XML files? 
 XML files lets you define and store data in a shareable manner. It provides rules to define any data. It cannot perform its own computing operations but it can be implemented for structured data managemnet. 
 

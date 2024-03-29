@@ -20,3 +20,11 @@ XML files lets you define and store data in a shareable manner. It provides rule
 
 ### Modeling
 [https://www.youtube.com/playlist?list=PLc7bpbeTIk75dgBVd07z6_uKN1KQkwFRK]
+
+### Installing ffmpeg for video rendering
+Follow this guide: https://phoenixnap.com/kb/ffmpeg-mac (involves installing Homebrew)
+
+### d.o.f
+qpos uses quaternions for position (see https://en.wikipedia.org/wiki/Quaternions_and_spatial_rotation for math). The first three d.o.f are x,y,z, and the four last ones are the four quaternion d.o.f associated with rotations.
+qvel = [x y z ?psi? theta phi] (see paper in dropbox for drawing showing these angles). psi does not have an affect at small vel, leads to turbulence at high vel
+

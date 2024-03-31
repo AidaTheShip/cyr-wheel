@@ -11,7 +11,7 @@ Add more information here...
 # Reinforcement Learning 
 We will use Mujuco to model the dynamics of the wheel in python. Then we use stable baselines to provide and set up a stable reinforcement learning algorithm. 
 
-## Mujuco
+## Mujoco
 Make sure that you install Mujuco: pip install mujoco 
 Note that everything in Mujuco is in cartesian coordinates. 
 

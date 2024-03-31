@@ -1,4 +1,3 @@
-
 <mujoco>
   <extension>
     <plugin plugin="mujoco.sdf.torus">
@@ -24,19 +23,21 @@
   </default>
 
   <worldbody>
-      <geom size="4 4 4" type="plane" material="grid"/>
-    <body pos="1 0 3">
+  <camera name="my_camera" pos="0 0 2" euler="45 90 0"/>
+
+      <geom size="10 10 10" type="plane" material="grid"/>
+    <body pos="1 0 0">
       <freejoint/>
       <geom type="sdf" mesh="torus" rgba=".2 .2 .8 1" euler="10 90 10" >
         <plugin instance="torus"/>
       </geom>
-      <inertial pos="2 0 0" mass="1" diaginertia="1 1 1"/>
+      <inertial pos="0 0 0" mass="4" diaginertia="4 4 4"/>
     </body>
     <light name="left" pos="-2 0 7" cutoff="80"/>
     <light name="right" pos="2 0 7" cutoff="80"/>
     
   </worldbody>
   <keyframe>
-    <key name="spinning" qpos="0 0 4 0 0 0 0" qvel="0 0 0 0 0 3" />  #See read.me for d.o.f
+    <key name="spinning" qpos="0 0 3 0 0 0 0" qvel="0 4 0 0 0 0" />  #See read.me for d.o.f
   </keyframe>
 </mujoco>

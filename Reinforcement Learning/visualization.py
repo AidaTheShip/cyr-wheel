@@ -1,7 +1,7 @@
 # We have to import our Mujoco code into a gynasium environment to use stable baselines
 # make sure that you have pip install gymnasium[mujoco] 
-import stable_baselines3
-import gymnasium
+#import stable_baselines3
+#import gymnasium
 import mujoco as mj
 import random 
 import os

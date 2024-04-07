@@ -12,32 +12,33 @@
     <mesh name="torus">
       <plugin instance="torus"/>
     </mesh>
-    <texture name="grid" type="2d" builtin="checker" rgb1=".1 .2 .3" rgb2=".2 .3 .4" width="300" height="300"/>
-    <material name="grid" texture="grid" texrepeat="8 8" reflectance=".2"/>
+    <texture name="grid" type="2d" builtin="checker" rgb1=".1 .2 .3" rgb2=".2 .3 .4" width="100" height="100"/>
+    <material name="grid" texture="grid" texrepeat="32 32" reflectance=".2"/>
   </asset>
 
   <option sdf_iterations="10" sdf_initpoints="40"/>
 
   <default>
-    <geom solref="0.01 1" solimp=".95 .99 .0001" friction="0.1"/>
+    <geom solref="0.01 1" solimp=".95 .99 .0001" friction="5"/>
   </default>
 
   <worldbody>
-  <camera name="my_camera" pos="0 0 2" euler="45 90 0"/>
+  <camera name="my_camera" pos="-5 -5 10" euler="30 -20 10"/>
 
-      <geom size="10 10 10" type="plane" material="grid"/>
+      <geom size="50 50 50" type="plane" material="grid"/>
     <body pos="1 0 0">
       <freejoint/>
-      <geom type="sdf" mesh="torus" rgba=".2 .2 .8 1" euler="10 90 10" >
+      <geom type="sdf" mesh="torus" rgba=".2 .2 .8 1" euler="10 90 90" >
         <plugin instance="torus"/>
       </geom>
       <inertial pos="0 0 0" mass="4" diaginertia="4 4 4"/>
+      <camera name="track" pos="0 -6 3" xyaxes="1 0 0 0 1 2" mode="track"/>
     </body>
     <light name="left" pos="-2 0 7" cutoff="80"/>
     <light name="right" pos="2 0 7" cutoff="80"/>
     
   </worldbody>
   <keyframe>
-    <key name="spinning" qpos="0 0 3 0 0 0 0" qvel="0 4 0 0 0 0" />  #See read.me for d.o.f
+    <key name="spinning" qpos="0 -5 1.6 0 0 0 0" qvel="5 5 0 0 0 0" />  #See read.me for d.o.f. z start at 1.6 to be on the ground
   </keyframe>
 </mujoco>

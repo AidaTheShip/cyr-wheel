@@ -1,4 +1,4 @@
-import gym
+from gym import Env
 from mujoco_py import load_model_from_path, MjSim, MjViewer
 
 # MIGHT MERGE THIS WITH SIMULATION.py - more overview like this though

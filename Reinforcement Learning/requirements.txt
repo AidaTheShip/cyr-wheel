@@ -3,3 +3,5 @@ matplotlib
 stable-baselines3
 mujoco 
 mediapy
+gym
+mujoco-py

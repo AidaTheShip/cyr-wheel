@@ -4,4 +4,4 @@ stable-baselines3
 mujoco 
 mediapy
 gym
-mujoco-py
+mujoco-py<2.2,>=2.1

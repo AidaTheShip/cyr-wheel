@@ -50,3 +50,6 @@ We will use Mujuco to model the dynamics of the wheel in python. Then we use sta
 In order for us to train an RL algorithm on the Mujoco environment we have created, we will use (former?) OpenAI's gym pipeline. 
 Many pre-set Mujoco environments are set in the Gym's examples and there is an option of [creating your own custom environments][https://www.gymlibrary.dev/content/environment_creation/].
 
+The documentation regarding using Mujoco environments with the Gym says: 
+> There are ten Mujoco environments: Ant, HalfCheetah, Hopper, Humanoid, HumanoidStandup, IvertedDoublePendulum, InvertedPendulum, Reacher, Swimmer, and Walker. All of these environments are stochastic in terms of their initial state, with a Gaussian noise added to a fixed initial state in order to add stochasticity. The state spaces for MuJoCo environments in Gym consist of two parts that are flattened and concatented together: a position of a body part (’mujoco-py.mjsim.qpos’) or joint and its corresponding velocity (’mujoco-py.mjsim.qvel’). Often, some of the first positional elements are omitted from the state space since the reward is calculated based on their values, leaviing it up to the algorithm to infer those hidden values indirectly.
+

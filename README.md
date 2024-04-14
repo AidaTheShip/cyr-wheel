@@ -64,3 +64,14 @@ Folder A/
             __init__.py
             NewEnv.py
 """
+
+### Gym.Spaces
+This superclass is used to define observation and action spaces. Spaces are crucially used in the gym to define the format of valid **action** and **observations**. In this, they clearly define how an agent can interact with environments, allowign us to work with highly structured data, provide a method to sample random elements. 
+
+An example that is used particularly often is the class 'gym.spaces.Box'. Specifically, a box represents a cartesian product of n closed intervals, each with the form or one of [a, b], (-∞, b], [a, ∞], (-∞, ∞).
+You can modify the dimensions by doing the following,e.g.: 
+"""python
+
+Box(low=_, high=_, shape=(_, _), dtype=np.float32)
+
+"""

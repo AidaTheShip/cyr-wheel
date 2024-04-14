@@ -65,7 +65,7 @@ class CyrWheel(mujoco_env.MujocoEnv, utils.EzPickle):
         xml_path = abspath
         
         frame_skip = 5
-        observation_space = 
+        observation_space = 0
         mujoco_env.MujocoEnv.__init__(self, xml_path, frame_skip, observation_space=observation_space)
         
     def step(self, action): 

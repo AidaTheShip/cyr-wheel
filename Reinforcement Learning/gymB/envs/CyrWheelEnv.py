@@ -1,15 +1,21 @@
 import numpy as np
 import os
-from gym import utils, error, spaces
-from gym.envs.mujoco import mujoco_env
-from mujoco_py import MjViewer, functions
+from gymnasium import utils, error, spaces
+from gymnasium.envs.mujoco import MujocoEnv
 
-from gym.spaces import Box # the space class is used to define observation and action spaces.
+# from mujoco_py import MjViewer, functions
+
+from gymnasium.spaces import Box # the space class is used to define observation and action spaces.
+# DEFAULT_CAMERA_CONFIG = {
+#     "trackbodyid": 1,
+#     "distance": 4.0,
+#     "lookat": np.array((0.0, 0.0, 2.0)),
+#     "elevation": -20.0,
+# }
+
 DEFAULT_CAMERA_CONFIG = {
-    "trackbodyid": 1,
-    "distance": 4.0,
-    "lookat": np.array((0.0, 0.0, 2.0)),
-    "elevation": -20.0,
+    "trackbodyid": 0,
+    "distance": 2.04,
 }
 
 # Note: We are using the MujocoEnv superclass which is used for ALL Mujcoco environments
@@ -56,18 +62,37 @@ Episode ends when the cyr wheel envirobment has either completed the full circle
 
 """
 
-class CyrWheel(mujoco_env.MujocoEnv, utils.EzPickle):
-    def __init__(self):
-        utils.EzPickle.__init__(self)
+class CyrWheel(MujocoEnv, utils.EzPickle):
+
+    metadata = {
+        "render_modes": [
+            "human",
+            "rgb_array",
+            "depth_array",
+        ],
+        "render_fps": 100,
+    }
+
+    def __init__(self, **kwargs):
+        utils.EzPickle.__init__(self, **kwargs)
         xml_path = "cyr_wheel.xml" # Setting the path for the model
         dirname = os.path.dirname(__file__)
         abspath = os.path.join(dirname + "/" + xml_path) # making sure that it aligns with our directory
         xml_path = abspath
+        observation_space = Box(low=-np.inf, high=np.inf, shape=(6,), dtype=np.float64)
         
         frame_skip = 5
         observation_space = 0
-        mujoco_env.MujocoEnv.__init__(self, xml_path, frame_skip, observation_space=observation_space)
-        
+                
+        MujocoEnv.__init__(
+            self,
+            xml_path,
+            frame_skip,
+            observation_space=observation_space,
+            default_camera_config=DEFAULT_CAMERA_CONFIG,
+            **kwargs,
+        )
+                
     def step(self, action): 
         """ 
         Purpose of the function: advance env by one timestep using the action a
@@ -79,8 +104,10 @@ class CyrWheel(mujoco_env.MujocoEnv, utils.EzPickle):
         observation = self._get_obs()
         distance_to_path = self.deviation()
         velocity_reward = self.calculate_vel_reward()
-        reward = -distance_to_path**2 + velocity_reward
+        reward = -distance_to_path**2 + velocity_reward # this is questionable.
         done = self.check_done(distance_to_path)
+        if self.render_mode == "human":
+            self.render()
         return observation, reward, done, {}
     
     def viewer_setup(self):

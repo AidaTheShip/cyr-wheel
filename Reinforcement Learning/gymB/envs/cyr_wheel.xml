@@ -1,5 +1,4 @@
-xml = """
-<mujoco>
+<mujoco model="cyr_wheel">
   <extension>
     <plugin plugin="mujoco.sdf.torus">
       <instance name="torus">
@@ -37,4 +36,3 @@ xml = """
 
   </worldbody>
 </mujoco>
-"""

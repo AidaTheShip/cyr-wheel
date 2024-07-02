@@ -14,6 +14,10 @@ from stable_baselines3.common.monitor import Monitor
 import os
 import argparse
 
+import torch
+print(torch.cuda.is_available())
+
+
 # Create directories to hold models and logs
 model_dir = "models"
 log_dir = "logs"
@@ -24,7 +28,7 @@ def train():
     model = sb3_class('MlpPolicy', env, verbose=1, device='cuda', tensorboard_log=log_dir)
 
     # Stop training when mean reward reaches reward_threshold
-    callback_on_best = StopTrainingOnRewardThreshold(reward_threshold=300, verbose=1)
+    callback_on_best = StopTrainingOnRewardThreshold(reward_threshold=50, verbose=1)
 
     # Stop training when model shows no improvement after max_no_improvement_evals, 
     # but do not start counting towards max_no_improvement_evals until after min_evals.

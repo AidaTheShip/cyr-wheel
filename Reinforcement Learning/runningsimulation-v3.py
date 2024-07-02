@@ -1,76 +1,43 @@
-
-"""
-This is the general algorithm that we are looking at. 
-
-for n times
-    while Goal is not achieved
-        take_action()
-        take_step()
-    end of while
-end of for
-
-"""
-
-# from stable_baselines3 import PPO
-# from stable_baselines3.common.env_util import make_vec_env
-import numpy
-import gymnasium as gym
-import gymB
-import numpy as np
-import torch
-import torch.nn as nn
-import torch.optim as optim
-
-from stable_baselines3 import PPO, DQN
-from stable_baselines3.common.evaluation import evaluate_policy
+from stable_baselines3 import PPO
 from stable_baselines3.common.env_util import make_vec_env
+import gymnasium as gym 
+import gymB
+from stable_baselines3.common.evaluation import evaluate_policy
 
-# Define the Policy Network
-class PolicyNetwork(nn.Module):
-    def __init__(self, state_space, action_space):
-        super(PolicyNetwork, self).__init__()
-        self.fc1 = nn.Linear(state_space, 16, dtype=np.float64)
-        self.fc2 = nn.Linear(16, action_space, dtype=np.float62)
-        self.softmax = nn.Softmax(dim=-1)
 
-    def forward(self, x):
-        x = torch.relu(self.fc1(x))
-        x = self.fc2(x)
-        return self.softmax(x)
+# Define your custom environment class (CyrWheel)
+# ...
 
-# print(env.observation_space.shape[0])
-# print(env.action_space.shape[0])
+# Register the environment (if not using custom registration, directly use CyrWheel class)
+# gym.envs.register(
+#     id='CyrWheel-v0',
+#     entry_point='path.to.your.module:CyrWheel',
+# )
 
+# Create the environment
 env_id = 'CyrWheel-v0'
-env = gym.make('CyrWheel-v0', render_mode='human')
-
-state_dim = env.observation_space.shape[0] 
-action_dim = env.action_space.shape[0]
-
 vec_env = make_vec_env(env_id, n_envs=1)
 
-# policy_net = PolicyNetwork(state_dim, action_dim)
-
-# model = PPO('MlpPolicy', env, verbose=1)
+# Initialize the PPO model
 model = PPO('MlpPolicy', vec_env, verbose=1)
 
-model.learn(total_timesteps=int(2e5), progress_bar=True)
+# Train the model
+model.learn(total_timesteps=int(10000), progress_bar=True)
 
-model.save("DQN_cyrwheel")
+# Save the model
+model.save("PPO_cyrwheel")
 
-model = PPO.load("DQN_cyrwheel", env=env)
+# Load the model
+model = PPO.load("PPO_cyrwheel", env=vec_env)
 
+# Evaluate the policy
 mean_reward, std_reward = evaluate_policy(model, model.get_env(), n_eval_episodes=10)
 
-# vec_env = model.get_env()
-obs = env.reset()
-
-for i in range(1000):
-    action, _states = model.predict(obs)
-    obs, rewards, dones, info = env.step(action)
-    vec_env.render("human")
-
-# model.learn(total_timesteps=10000)
-
-#observation = env.reset()
-#n_timesteps = 1000
+# Reset the environment
+# obs = vec_env.reset()
+print(f"MEAN REWARD: {mean_reward} \n Std_reward: {std_reward}")
+# # Run the trained model
+# for i in range(1000):
+#     action, _states = model.predict(obs)
+#     obs, rewards, dones, info = vec_env.step(action)
+#     vec_env.render("human")

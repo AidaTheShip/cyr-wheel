@@ -76,6 +76,21 @@ class CyrWheel(MujocoEnv, utils.EzPickle):
     # def action(self):
     #     pass
 
+    def _get_obs(self):
+        try:
+            median_contact = np.median(self.data.contact.pos, axis=0)
+            if np.isnan(median_contact).any():
+                median_contact = np.zeros(3)  # Default to zero if NaN
+        except ValueError:
+            median_contact = np.zeros(3)  # Default to zero if no contacts
+
+        obs = np.concatenate([median_contact, self.data.qpos[:5]])  # Simplified example
+        if np.isnan(obs).any():
+            raise ValueError(f"NaN in observations: {obs}")
+
+        return obs
+
+
     def step(self, action):
         self.do_simulation(action, self.frame_skip)
         obs = self._get_obs()
@@ -85,6 +100,18 @@ class CyrWheel(MujocoEnv, utils.EzPickle):
         if self.step_count >= self.max_steps:
             done = True  # End the episode if max steps reached
         return obs, reward, done, {}
+    
+    def step(self, action):
+        self.do_simulation(action, self.frame_skip)
+        obs = self._get_obs()
+        reward = self.reward(obs)
+        self.step_count += 1  # Increment step count
+
+        # Check if the episode is done
+        done = self._check_done(obs)
+        truncated = self.step_count >= self.max_steps  # End the episode if max steps reached
+
+        return obs, reward, done, truncated, {}
 
     
     def reward(self, actual):
@@ -119,13 +146,21 @@ class CyrWheel(MujocoEnv, utils.EzPickle):
     #     return contact_position 
 
     def _get_obs(self):
-        try:
-            median_contact = np.median(self.data.contact.pos, axis=0)
-        except ValueError:
+        if self.data.ncon > 0:
+            # Access the contact positions correctly
+            contact_positions = np.array([self.data.contact[i].pos for i in range(self.data.ncon)])
+            median_contact = np.median(contact_positions, axis=0)[:3]
+            if np.isnan(median_contact).any():
+                median_contact = np.zeros(3)  # Default to zero if NaN
+        else:
             median_contact = np.zeros(3)  # Default to zero if no contacts
-        
+
         obs = np.concatenate([median_contact, self.data.qpos[:5]])  # Simplified example
+        if np.isnan(obs).any():
+            raise ValueError(f"NaN in observations: {obs}")
+
         return obs
+
 
     # def _get_obs(self):
     #     contact_position = self.data.contact
@@ -156,6 +191,10 @@ class CyrWheel(MujocoEnv, utils.EzPickle):
         qvel = np.array([0, 3, 0, 0, 0, 0, 0.04145])
         self.set_state(qpos, qvel)
         self.step_count = 0  # Reset step count on each new episode
+        obs = self._get_obs()
+        if np.isnan(obs).any():
+            raise ValueError(f"NaN in initial observation: {obs}")
+        return obs
         # return self._get_obs()
 
     def _check_done(self, obs):

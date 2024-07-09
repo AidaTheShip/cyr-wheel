@@ -30,7 +30,7 @@ class CyrWheel(MujocoEnv, utils.EzPickle):
         
         self.max_steps = 1000  # Set maximum number of steps per episode
         self.step_count = 0  # Initialize step count
-        
+        self.old_reward = 0
         self.init_qpos = np.zeros(self.model.nq)  
         self.init_qvel = np.zeros(self.model.nv)
         
@@ -91,15 +91,15 @@ class CyrWheel(MujocoEnv, utils.EzPickle):
         return obs
 
 
-    def step(self, action):
-        self.do_simulation(action, self.frame_skip)
-        obs = self._get_obs()
-        reward = self.reward(obs)
-        done = self._check_done(obs)
-        self.step_count += 1  # Increment step count
-        if self.step_count >= self.max_steps:
-            done = True  # End the episode if max steps reached
-        return obs, reward, done, {}
+    # def step(self, action):
+    #     self.do_simulation(action, self.frame_skip)
+    #     obs = self._get_obs()
+    #     reward = self.reward(obs)
+    #     done = self._check_done(obs)
+    #     self.step_count += 1  # Increment step count
+    #     if self.step_count >= self.max_steps:
+    #         done = True  # End the episode if max steps reached
+    #     return obs, reward, done, {}
     
     def step(self, action):
         self.do_simulation(action, self.frame_skip)
@@ -115,17 +115,49 @@ class CyrWheel(MujocoEnv, utils.EzPickle):
 
     
     def reward(self, actual):
-        # This is the function that will caculate the reward based on how much off the Cyr wheel is from the path
-        # What is the data structure that we hve here? 
-        # We want x2-x1, y2-y1. endpoint also has to be considered. 
-        # will have to update the model for this beforehand.
-        # print(f"COORDINATES: {actual, self.desired_path}")
-        # reward = -np.mean((self.desired_path-actual)**2)  # using MSE for the reward for now.
-        # return reward
 
-        desired_path = self.init_qpos[0]
-        reward = -np.mean((desired_path - actual)**2)
+        # The desired path is a specific x-coordinate
+        desired_x = self.init_qpos[0]  # Assuming the initial x position is the desired path
+        
+        # Calculate the distance from the desired path
+        x_position = actual[0]  # Assuming the x position is the first element of the observation
+        y_position = actual[0]
+        # distance_to_path = np.abs(desired_x - x_position)
+        distance_to_path =  np.abs(4.0 - np.sqrt((x_position**2+y_position**2)))
+        
+        # Penalize large deviations from the path
+        path_reward = -distance_to_path
+        
+        # Encourage smooth movements by penalizing high velocities
+        smoothness_penalty = np.linalg.norm(self.data.qvel)  # Penalize high velocities
+        
+        # Calculate the total reward
+        reward = path_reward - 0.5 * smoothness_penalty
+        
         return reward
+        # # This is the function that will caculate the reward based on how much off the Cyr wheel is from the path
+        # # What is the data structure that we hve here? 
+        # # We want x2-x1, y2-y1. endpoint also has to be considered. 
+        # # will have to update the model for this beforehand.
+        # # print(f"COORDINATES: {actual, self.desired_path}")
+        # # reward = -np.mean((self.desired_path-actual)**2)  # using MSE for the reward for now.
+        # # return reward
+
+        # desired_path = self.init_qpos[0]  # Assuming this is the target path position
+        
+        # # Calculate the distance from the desired path
+        # distance_to_path = np.linalg.norm(desired_path - actual[:2])  # Use only the x and y coordinates for path following
+        
+        # # Penalize large deviations from the path
+        # path_reward = -distance_to_path
+        
+        # # Encourage smooth movements
+        # smoothness_penalty = np.linalg.norm(self.data.qvel)  # Penalize high velocities
+        
+        # # Calculate the total reward
+        # reward = path_reward - 0.1 * smoothness_penalty
+        
+        # return reward
 
     # def _get_obs(self):
     #     # note that our observation data is the contact point (x, y, z) of the Cyr Wheel at the given time. 

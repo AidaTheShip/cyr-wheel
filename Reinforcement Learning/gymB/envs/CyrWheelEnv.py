@@ -111,7 +111,16 @@ class CyrWheel(MujocoEnv, utils.EzPickle):
         done = self._check_done(obs)
         truncated = self.step_count >= self.max_steps  # End the episode if max steps reached
 
-        return obs, reward, done, truncated, {}
+        # Returning the contact positions to keep track of them: 
+        contact_positions = np.array([self.data.contact[i].pos for i in range(self.data.ncon)])
+        median_contact = np.median(contact_positions, axis=0)[:3]
+        if np.isnan(median_contact).any():
+            median_contact = np.zeros(3)  # Default to zero if NaN
+        else:
+            median_contact = np.zeros(3)  # Default to zero if no contacts
+        info = {'Contact position': median_contact}
+
+        return obs, reward, done, truncated, info
 
     
     def reward(self, actual):
@@ -122,8 +131,12 @@ class CyrWheel(MujocoEnv, utils.EzPickle):
         # Calculate the distance from the desired path
         x_position = actual[0]  # Assuming the x position is the first element of the observation
         y_position = actual[0]
-        # distance_to_path = np.abs(desired_x - x_position)
-        distance_to_path =  np.abs(4.0 - np.sqrt((x_position**2+y_position**2)))
+
+        # STRAIGHT LINE
+        distance_to_path = np.abs(desired_x - x_position)
+
+        # ARC LINE  
+        # distance_to_path =  np.abs(4.0 - np.sqrt((x_position**2+y_position**2)))
         
         # Penalize large deviations from the path
         path_reward = -distance_to_path
@@ -135,47 +148,6 @@ class CyrWheel(MujocoEnv, utils.EzPickle):
         reward = path_reward - 0.5 * smoothness_penalty
         
         return reward
-        # # This is the function that will caculate the reward based on how much off the Cyr wheel is from the path
-        # # What is the data structure that we hve here? 
-        # # We want x2-x1, y2-y1. endpoint also has to be considered. 
-        # # will have to update the model for this beforehand.
-        # # print(f"COORDINATES: {actual, self.desired_path}")
-        # # reward = -np.mean((self.desired_path-actual)**2)  # using MSE for the reward for now.
-        # # return reward
-
-        # desired_path = self.init_qpos[0]  # Assuming this is the target path position
-        
-        # # Calculate the distance from the desired path
-        # distance_to_path = np.linalg.norm(desired_path - actual[:2])  # Use only the x and y coordinates for path following
-        
-        # # Penalize large deviations from the path
-        # path_reward = -distance_to_path
-        
-        # # Encourage smooth movements
-        # smoothness_penalty = np.linalg.norm(self.data.qvel)  # Penalize high velocities
-        
-        # # Calculate the total reward
-        # reward = path_reward - 0.1 * smoothness_penalty
-        
-        # return reward
-
-    # def _get_obs(self):
-    #     # note that our observation data is the contact point (x, y, z) of the Cyr Wheel at the given time. 
-    #     contact_position = self.data.contact.pos.flatten()[:8] # making sure that we have (n, ) vector
-    #     # if not contact_position:
-    #     #     contact_position = np.zeros((1,3)) 
-    #     com_sphere = self.data.body("sphere").xpos.flatten() # this gets us the COM of the sphere attached to the Cyr Wheel 
-    #     com_wheel = self.data.body("wheel_and_axle").xpos.flatten() # this gets us the COM of the wheel 
-    #     # position = self.data.qpos[:2]  # Assuming qpos contains [x, y] for the wheel's position
-    #     # velocity = self.data.qvel[:2]  # Assuming qvel contains [vx, vy] for the wheel's velocity
-    #     # orientation = self.data.qpos[2]  # Assuming the third qpos is the wheel's orientation
-    #     # angular_velocity = self.data.qvel[2]  # Assuming the third qvel is the wheel's angular velocity
-    #     # path_vector = self._calculate_path_vector()
-    #     # return np.concatenate([position, velocity, [orientation, angular_velocity], path_vector])
-    #     # return np.concatenate(contact_position, com_sphere, com_wheel)
-    #     print(f"CONTACT SHAPE {contact_position.shape}")
-
-    #     return contact_position 
 
     def _get_obs(self):
         if self.data.ncon > 0:
@@ -192,29 +164,6 @@ class CyrWheel(MujocoEnv, utils.EzPickle):
             raise ValueError(f"NaN in observations: {obs}")
 
         return obs
-
-
-    # def _get_obs(self):
-    #     contact_position = self.data.contact
-    #     # print(contact_position)
-    #     expected_size = 8
-
-    #     try:
-    #         median_contact = np.median(self.data.contact.pos, axis = 0) #median value
-    #     except ValueError:
-    #         median_contact = [np.nan,np.nan,np.nan]
-
-
-    #     print(median_contact)
-    #     # actual_size = contact_position.size
-    #     # if actual_size != expected_size:
-    #     #     # Pad with zeros if not enough contact points\
-    #     #     print(contact_position.shape)
-    #     #     print("THE SIZES OF THE ARRAYS DON'T WORK OUT. ")
-                
-    #     #     # contact_position = np.pad(contact_position, (0, expected_size - actual_size), mode='constant')
-    #     # print(f"CONTACT  {contact_position}")
-    #     return contact_position
 
     def reset_model(self):
         # Reset the simulation to a known state

@@ -23,7 +23,7 @@ class CyrWheel(MujocoEnv, utils.EzPickle):
             frame_skip=frame_skip, 
             observation_space=observation_space, 
             default_camera_config={
-                "trackbodyid": 0,
+                "trackbodyid": 0, 
                 "distance": 10.0,
             },
             **kwargs)
@@ -71,35 +71,20 @@ class CyrWheel(MujocoEnv, utils.EzPickle):
         # straight line
         self.init_pos_x = self.init_qpos[0]
         return self.init_pos_x
-    
-    # This is about moving this in the action space
-    # def action(self):
-    #     pass
 
-    def _get_obs(self):
-        try:
-            median_contact = np.median(self.data.contact.pos, axis=0)
-            if np.isnan(median_contact).any():
-                median_contact = np.zeros(3)  # Default to zero if NaN
-        except ValueError:
-            median_contact = np.zeros(3)  # Default to zero if no contacts
+    # def _get_obs(self):
+    #     try:
+    #         median_contact = np.median(self.data.contact.pos, axis=0)
+    #         if np.isnan(median_contact).any():
+    #             median_contact = np.zeros(3)  # Default to zero if NaN
+    #     except ValueError:
+    #         median_contact = np.zeros(3)  # Default to zero if no contacts
 
-        obs = np.concatenate([median_contact, self.data.qpos[:5]])  # Simplified example
-        if np.isnan(obs).any():
-            raise ValueError(f"NaN in observations: {obs}")
+    #     obs = np.concatenate([median_contact, self.data.qpos[:5]])  # Simplified example
+    #     if np.isnan(obs).any():
+    #         raise ValueError(f"NaN in observations: {obs}")
 
-        return obs
-
-
-    # def step(self, action):
-    #     self.do_simulation(action, self.frame_skip)
-    #     obs = self._get_obs()
-    #     reward = self.reward(obs)
-    #     done = self._check_done(obs)
-    #     self.step_count += 1  # Increment step count
-    #     if self.step_count >= self.max_steps:
-    #         done = True  # End the episode if max steps reached
-    #     return obs, reward, done, {}
+    #     return obs
     
     def step(self, action):
         self.do_simulation(action, self.frame_skip)
@@ -112,13 +97,13 @@ class CyrWheel(MujocoEnv, utils.EzPickle):
         truncated = self.step_count >= self.max_steps  # End the episode if max steps reached
 
         # Returning the contact positions to keep track of them: 
-        contact_positions = np.array([self.data.contact[i].pos for i in range(self.data.ncon)])
-        median_contact = np.median(contact_positions, axis=0)[:3]
-        if np.isnan(median_contact).any():
-            median_contact = np.zeros(3)  # Default to zero if NaN
-        else:
-            median_contact = np.zeros(3)  # Default to zero if no contacts
-        info = {'Contact position': median_contact}
+        # contact_positions = np.array([self.data.contact[i].pos for i in range(self.data.ncon)])
+        # median_contact = np.median(contact_positions, axis=0)[:3]
+        # if np.isnan(median_contact).any():
+        #     median_contact = np.zeros(3)  # Default to zero if NaN
+        # else:
+        #     median_contact = np.zeros(3)  # Default to zero if no contacts
+        info = {'Contact position': {}}
 
         return obs, reward, done, truncated, info
 
@@ -133,7 +118,8 @@ class CyrWheel(MujocoEnv, utils.EzPickle):
         y_position = actual[0]
 
         # STRAIGHT LINE
-        distance_to_path = np.abs(desired_x - x_position)
+        # distance_to_path = np.linalg.norm(desired_x - x_position)
+        distance_to_path = np.mean((desired_x - x_position)**2)
 
         # ARC LINE  
         # distance_to_path =  np.abs(4.0 - np.sqrt((x_position**2+y_position**2)))
@@ -158,7 +144,7 @@ class CyrWheel(MujocoEnv, utils.EzPickle):
                 median_contact = np.zeros(3)  # Default to zero if NaN
         else:
             median_contact = np.zeros(3)  # Default to zero if no contacts
-
+        
         obs = np.concatenate([median_contact, self.data.qpos[:5]])  # Simplified example
         if np.isnan(obs).any():
             raise ValueError(f"NaN in observations: {obs}")
@@ -169,7 +155,7 @@ class CyrWheel(MujocoEnv, utils.EzPickle):
         # Reset the simulation to a known state
         # qpos gives: x,y,z
         qpos = np.array([0, 0, 1.6, 0, 0, 0, 0, 0])
-        qvel = np.array([0, 3, 0, 0, 0, 0, 0.04145])
+        qvel = np.array([0, 3.5, 0, 0, 0, 0, 0.04145])
         self.set_state(qpos, qvel)
         self.step_count = 0  # Reset step count on each new episode
         obs = self._get_obs()

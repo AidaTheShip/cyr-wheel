@@ -2,6 +2,64 @@
   <extension>
     <plugin plugin="mujoco.sdf.torus">
       <instance name="torus">
+        <config key="radius1" value="0.90"/>
+        <config key="radius2" value="0.1"/>
+      </instance>
+    </plugin>
+  </extension>
+
+  <asset>
+    <mesh name="torus">
+      <plugin instance="torus"/>
+    </mesh>
+    <texture name="grid" type="2d" builtin="checker" rgb1=".1 .2 .3" rgb2=".2 .3 .4" width="300" height="300"/>
+    <material name="grid" texture="grid" texrepeat="80 80" reflectance=".2"/>
+    <texture name="torus_texture" type="2d" file="\Users\18579\Desktop\cyr-wheel\Reinforcement Learning\green_texture.png"/>
+    <material name="torus_material" texture="torus_texture" texrepeat="1 1" reflectance=".5"/>
+  
+  </asset>
+
+  <option sdf_iterations="10" sdf_initpoints="40" gravity="0 0 -1"/>
+
+  <default>
+    <geom solref="0.01 1" solimp="1 1 0" friction = "0.8"/>
+  </default>
+
+  <worldbody>
+    <camera name="my_camera" pos="-5 -5 10" euler="30 -20 10"/>
+
+    <geom name="floor" size="100 100 100" type="plane" material="grid" friction = "1 0 0"/>
+    <body name="wheel_and_axle" pos="0 0 1.6" >
+      <freejoint/>
+      <geom type="sdf" mesh="torus"  material = "torus_material" mass="1" euler = "0 90 0"  friction = "1 0 0">
+        <plugin instance="torus"/>
+      </geom>
+      <geom name="cylinder" type="cylinder" size="0.05 1" euler="0 90 0" mass="0" pos="0 0 0" friction = "0 0 0"/>
+      <body name="sphere" pos="0 0 0">
+        <joint name="slider1" type="slide" axis="1 0 0" range="-1 1"/>
+        <geom type="sphere" size="0.2" rgba="0 0 1 1" mass="10" friction="0 0 0"/>
+      </body>
+      <camera name="track" pos="0 -6 3" xyaxes="1 0 0 0 1 2" mode="track"/>
+      <camera name="sideview" pos="-2 0 1" xyaxes="0 -1 0 1 0 2" mode="track"/>
+    </body>
+
+    <light name="left" pos="-2 0 7" cutoff="80"/>
+    <light name="right" pos="2 0 7" cutoff="80"/>
+
+  </worldbody>
+
+  <actuator>
+    <motor name="my_motor" joint="slider1" ctrlrange="-1.0 1.0"/>
+  </actuator>
+  <!-- <keyframe>
+    <key name="spinning" qpos="0 0 1 0 0 0 0 0" qvel="1 1 0 -1 0 0 0"/>
+  </keyframe> -->
+</mujoco>
+
+<!-- <mujoco>
+  <extension>
+    <plugin plugin="mujoco.sdf.torus">
+      <instance name="torus">
         <config key="radius1" value="1.0"/>
         <config key="radius2" value="0.10"/>
       </instance>
@@ -51,4 +109,6 @@
   <!-- <keyframe>
     <key name="spinning" qpos="0 0 1.7 0 0 0 0 0" qvel="0 3 0 0 0 0 0.04145"/>
   </keyframe> -->
-</mujoco>
+</mujoco> -->
+
+

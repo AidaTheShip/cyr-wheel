@@ -1,0 +1,25 @@
+<mujoco>
+<worldbody>
+    <light name="top" pos="10 10 10"/>
+    <body name="pendulum" euler="0 0 -30">
+        <joint name="swing" type="hinge" axis="1 -1 0" pos="0 0 10"/>
+        <geom name="arm" type="cylinder" size="0.01 0.375" rgba="1 0 0 1" pos="0 0 9.625" mass = "0.1"/> <!-- adjust position and length of cylinder -->
+        <body name="sphere_holder" pos="0 0 0">  <!-- adjust Position of the sphere_holder body (centerpoint of sphere) -->
+            <joint name="human_slider" type="slide" axis="0 0 1" range="-0.25 0.25"/>
+            <geom name="sphere" type="sphere" size="0.02" rgba="0 1 0 1" pos="0 0 0" mass = "1"/>  <!-- adjust sphere mass -->
+    </body>
+    </body>
+    <camera name="front" pos="0 -3 9.5" xyaxes="1 0 0 0 0 1" />
+</worldbody>
+
+
+
+<!-- <keyframe> -->
+    <!-- <key name="tester" qpos="{qpos[0]} {qpos[1]}" qvel="{qvel[0]} {qvel[1]}"/> adjust initial conditions -->
+<!-- </keyframe> -->
+
+<actuator>
+    <motor name="my_motor" joint="human_slider" ctrlrange = "-20 20"/>
+</actuator>
+
+</mujoco>

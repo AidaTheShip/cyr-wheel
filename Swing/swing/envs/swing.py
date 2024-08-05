@@ -5,7 +5,7 @@ from gymnasium.envs.mujoco import MujocoEnv
 import mujoco
 from gymnasium.spaces import Box
 
-class CyrWheel(MujocoEnv, utils.EzPickle):
+class SwingEnv(MujocoEnv, utils.EzPickle):
     metadata = {
         "render_modes": ["human", "rgb_array", "depth_array"],
         "render_fps": 25,
@@ -15,12 +15,12 @@ class CyrWheel(MujocoEnv, utils.EzPickle):
 
         utils.EzPickle.__init__(self, **kwargs)
         # Establishing Path to XML file
-        xml_path = os.path.join(os.path.dirname(__file__), "cyr_wheel.xml") 
+        xml_path = os.path.join(os.path.dirname(__file__), "swing.xml") 
         # Setting observation space
-        observation_space = Box(low=-np.inf, high=np.inf, shape=(8,), dtype=np.float64)
+        observation_space = Box(low=-np.inf, high=np.inf, shape=(5,), dtype=np.float64)
 
         # Setting action space 
-        action_space = Box(low=np.array([-1.0]), high=np.array([1.0]), shape=(1,), dtype=np.float32)
+        # action_space = Box(low=np.array([-1.0]), high=np.array([1.0]), shape=(1,), dtype=np.float32)
 
         duration = 20  # sec, assuming this means 20 timesteps per action?
         frame_skip = 20
@@ -30,7 +30,7 @@ class CyrWheel(MujocoEnv, utils.EzPickle):
             observation_space=observation_space, 
             default_camera_config={
                 "trackbodyid": 0, 
-                "distance": 20.0,
+                "distance": 50.0,
             },
             **kwargs)
         
@@ -186,8 +186,8 @@ class CyrWheel(MujocoEnv, utils.EzPickle):
     def reset_model(self):
         # Reset the simulation to a known state
         # qpos gives: x,y,z
-        qpos = np.array([0, 0, 1.1, 0, 0, 0, 0, 0])
-        qvel = np.array([0, 3.5, 0, 0, 0, 0, 0.04145])
+        qpos = np.array([0, 0])
+        qvel = np.array([0, 0])
         self.set_state(qpos, qvel)
         self.step_count = 0  # Reset step count on each new episode
         obs = self._get_obs()

@@ -1,10 +1,5 @@
 # cyr-wheel
 
-# TO-DO 
-- Figure out how units work in Mujoco.
-- Reinforcement Learning Algorithm in Mujoco. 
-- Scale/Rotate/Translate objects in Mujoco. (Intial conditions)
-
 # Control Algorithm 
 Add more information here...
 
@@ -75,5 +70,3 @@ You can modify the dimensions by doing the following,e.g.:
 Box(low=_, high=_, shape=(_, _), dtype=np.float32)
 
 """
-
-### Action space

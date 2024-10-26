@@ -6,4 +6,5 @@ gymB.egg-info/dependency_links.txt
 gymB.egg-info/requires.txt
 gymB.egg-info/top_level.txt
 gymB/envs/CyrWheelEnv.py
+gymB/envs/CyrWheelEnv_old.py
 gymB/envs/__init__.py

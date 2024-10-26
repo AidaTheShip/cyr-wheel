@@ -12,18 +12,23 @@ class CyrWheel(MujocoEnv, utils.EzPickle):
     }
 
     def __init__(self, **kwargs):
+        # Initating arrays for us logging them over time
+        self.actions_log = []
+        self.rewards_log = []
+        self.time_steps = []
+        self.time_step = 0
 
         utils.EzPickle.__init__(self, **kwargs)
         # Establishing Path to XML file
         xml_path = os.path.join(os.path.dirname(__file__), "cyr_wheel.xml") 
         # Setting observation space
+        
         observation_space = Box(low=-np.inf, high=np.inf, shape=(8,), dtype=np.float64)
 
         # Setting action space 
-        action_space = Box(low=np.array([-1.0]), high=np.array([1.0]), shape=(1,), dtype=np.float32)
+        # action_space = Box(low=np.array([-1.0]), high=np.array([1.0]), shape=(1,), dtype=np.float32)
 
-        duration = 20  # sec, assuming this means 20 timesteps per action?
-        frame_skip = 20
+        frame_skip = 20 # this allows us to control how many frames are "skipped" -> fine control 
         super().__init__(
             xml_path, 
             frame_skip=frame_skip, 
@@ -33,8 +38,8 @@ class CyrWheel(MujocoEnv, utils.EzPickle):
                 "distance": 20.0,
             },
             **kwargs)
-        
-        self.max_steps = 10000  # Set maximum number of steps per episode
+        self.action_space = Box(low=np.array([-1.0]), high=np.array([3.0]), shape=(1,), dtype=np.float32)
+        self.max_steps = 1000  # Set maximum number of steps per episode
         self.step_count = 0  # Initialize step count
         self.old_reward = 0
         self.init_qpos = np.zeros(self.model.nq)  
@@ -93,6 +98,8 @@ class CyrWheel(MujocoEnv, utils.EzPickle):
     #     return obs
     
     def step(self, action):
+        self.time_step += 1
+
         self.do_simulation(action, self.frame_skip)
         obs = self._get_obs()
         reward = self.reward(obs)
@@ -102,14 +109,12 @@ class CyrWheel(MujocoEnv, utils.EzPickle):
         done = self._check_done(obs)
         truncated = self.step_count >= self.max_steps  # End the episode if max steps reached
 
-        # Returning the contact positions to keep track of them: 
-        # contact_positions = np.array([self.data.contact[i].pos for i in range(self.data.ncon)])
-        # median_contact = np.median(contact_positions, axis=0)[:3]
-        # if np.isnan(median_contact).any():
-        #     median_contact = np.zeros(3)  # Default to zero if NaN
-        # else:
-        #     median_contact = np.zeros(3)  # Default to zero if no contacts
         info = {'Control': self.data.ctrl, "Action": action}
+
+        # Log the action and reward
+        self.actions_log.append(action)
+        self.rewards_log.append(reward)
+        self.time_steps.append(self.time_step)
 
         return obs, reward, done, truncated, info
     
@@ -140,32 +145,69 @@ class CyrWheel(MujocoEnv, utils.EzPickle):
     #     return reward
 
     
-    def reward(self, actual):
+    def reward(self, actual, path_type='waltz'):
+        # Get the agent's position and velocity
+        x_position = actual[0]
+        y_position = actual[1]
+        angular_velocity = self.data.qvel[2]  # Assuming angular velocity around the z-axis
 
-        # The desired path is a specific x-coordinate
-        desired_x = self.init_qpos[0]  # Assuming the initial x position is the desired path
-        
-        # Calculate the distance from the desired path
-        x_position = actual[0]  # Assuming the x position is the first element of the observation
-        y_position = actual[0]
+        if path_type == 'waltz':
+            # Expected periodic path for the x and y positions based on the "waltz" pattern
+            period = 10  # How many timesteps for a full oscillation (tune this)
+            amplitude = 6.0  # Amplitude of the waltz movement
+            desired_x_position = amplitude * np.sin(2 * np.pi * self.time_step / period)  # Sinusoidal waltz in x
+            desired_y_position = amplitude * np.cos(2 * np.pi * self.time_step / period)  # Cosine in y for circular motion
 
-        # STRAIGHT LINE
-        distance_to_path = np.linalg.norm(desired_x - x_position)
-        distance_to_path = np.mean((desired_x - x_position)**2)
+            # Reward for following the periodic path (penalize deviation)
+            distance_to_path = np.linalg.norm([x_position - desired_x_position, y_position - desired_y_position])
 
-        # ARC LINE  
-        # distance_to_path =  np.abs(4.0 - np.sqrt((x_position**2+y_position**2)))
-        
-        # Penalize large deviations from the path
-        path_reward = -distance_to_path
-        
-        # Encourage smooth movements by penalizing high velocities
-        smoothness_penalty = np.linalg.norm(self.data.qvel)  # Penalize high velocities
-        
-        # Calculate the total reward
-        reward = path_reward - 0.5 * smoothness_penalty
-        
+            path_reward = -distance_to_path  # Negative reward for distance from the waltz path
+
+            # Encourage a steady angular velocity (e.g., spinning smoothly)
+            desired_angular_velocity = 1.0  # Tune this to control the speed of the spin
+            angular_velocity_penalty = np.abs(angular_velocity - desired_angular_velocity)
+
+            # Penalty for high deviation from the desired angular velocity
+            smoothness_penalty = angular_velocity_penalty
+
+            # Combine the path reward and smoothness penalty
+            reward = path_reward - 0.1 * smoothness_penalty
+
+        else:
+            raise ValueError(f"Unsupported path_type: {path_type}")
+
         return reward
+
+        # path_reward = -distance_to_path
+        # smoothness_penalty = np.linalg.norm(self.data.qvel)
+
+        # reward = path_reward - 0.1 * smoothness_penalty
+
+        # # Apply tanh to compress the range to [-1, 1]
+        # transformed_reward = np.tanh(reward)
+
+        # return transformed_reward
+
+
+    # def reward(self, actual):
+    #     desired_x = self.init_qpos[0]  # Assuming the initial x position is the desired path
+    #     x_position = actual[0]  # Assuming the x position is the first element of the observation
+    #     y_position = actual[1]  # Assuming the y position is the second element of the observation
+
+    #     # ARC LINE  
+    #     distance_to_path = np.abs(4.0 - np.sqrt((x_position**2 + y_position**2)))
+        
+    #     # Penalize large deviations from the path
+    #     path_reward = -distance_to_path
+        
+    #     # Encourage smooth movements by penalizing high velocities
+    #     smoothness_penalty = np.linalg.norm(self.data.qvel)  # Penalize high velocities
+        
+    #     # Calculate the total reward
+    #     reward = path_reward - 0.5 * smoothness_penalty
+        
+    #     return reward
+
 
     def _get_obs(self):
         if self.data.ncon > 0:

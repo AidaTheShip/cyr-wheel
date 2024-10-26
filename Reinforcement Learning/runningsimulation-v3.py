@@ -23,8 +23,9 @@ eval_env = make_vec_env(env_id, n_envs=1)
 
 # Load the model
 # model = PPO.load("PPO_cyrwheel", env=eval_env)
-model = PPO.load("PPO_cyrwheel", env=eval_env)
 
+# Try DQN?
+model = PPO.load("PPO_cyrwheel", env=eval_env)
 
 # Evaluate the policy
 mean_reward, std_reward = evaluate_policy(model, eval_env, n_eval_episodes=100)
@@ -107,15 +108,15 @@ plt.legend()
 plt.show()
 
 
-# plt.figure(figsize=(12, 6))
-# timesteps = list(range(1000))
-# plt.plot(timesteps, control_data, label='Control Data')
-# plt.xlabel('Time Steps')
-# plt.ylabel('Control Values')
-# plt.title('Control Values Over Time')
-# plt.legend()
-# # plt.grid(True)
-# plt.show()
+plt.figure(figsize=(12, 6))
+timesteps = list(range(1000))
+plt.plot(timesteps, control_data, label='Control Data')
+plt.xlabel('Time Steps')
+plt.ylabel('Control Values')
+plt.title('Control Values Over Time')
+plt.legend()
+# plt.grid(True)
+plt.show()
 
 # plt.figure(figsize=(12, 6))
 # timesteps = list(range(1000))
